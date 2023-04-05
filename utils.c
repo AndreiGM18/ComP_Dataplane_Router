@@ -3,6 +3,28 @@
 #include "protocols.h"
 #include "utils.h"
 
+void swap_mac(mac_t *mac_1, mac_t *mac_2)
+{
+    mac_t *aux = (mac_t *)malloc(ETH_ALEN * sizeof(mac_t));
+
+    memcpy(aux, mac_1, ETH_ALEN);
+    memcpy(mac_1, mac_2, ETH_ALEN);
+    memcpy(mac_2, aux, ETH_ALEN);
+
+    free(aux);
+}
+
+mac_t *find_mac(in_addr_t ip, mac_ip_t *cache, uint cache_len)
+{
+    for (uint i = 0; i < cache_len; ++i) {
+        if (cache[i].ip == ip) {
+            return cache[i].mac;
+        }
+    }
+
+    return NULL;
+}
+
 int route_table_cmp(const void *x, const void *y)
 {
     const struct route_table_entry *rt_1 = x;
@@ -10,7 +32,7 @@ int route_table_cmp(const void *x, const void *y)
 
     mask_t common = ntohl(rt_1->mask) & ntohl(rt_2->mask);
 
-    bool equal = (ntohl(rt_1->prefix) & common == (ntohl(rt_2->prefix)) & common);
+    bool equal = ((ntohl(rt_1->prefix) & common) == (ntohl(rt_2->prefix) & common));
     if (equal) {
         if (ntohl(rt_1->mask) < ntohl(rt_2->mask)) {
             return 1;
@@ -18,7 +40,7 @@ int route_table_cmp(const void *x, const void *y)
             return -1;
         }
     } else {
-        if (ntohl(rt_1->prefix) & common < (ntohl(rt_2->prefix)) & common) {
+        if ((ntohl(rt_1->prefix) & common) < (ntohl(rt_2->prefix) & common)) {
             return 1;
         } else {
             return -1;

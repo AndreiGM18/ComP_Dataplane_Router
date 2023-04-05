@@ -1,7 +1,7 @@
 #include "queue.h"
 #include "lib.h"
-#include "protocols.h"
 #include "utils.h"
+#include "ip.h"
 
 int main(int argc, char *argv[])
 {
@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 			struct iphdr *ip_hdr =  (struct iphdr *)(buf + sizeof(struct ether_header));
 		
 			// do ip
+			ip(interface, buf, len, int_ip, ip_hdr, eth_hdr, route_table, route_table_len, cache, cache_len, q, &q_len);
 
 			continue;
 		}

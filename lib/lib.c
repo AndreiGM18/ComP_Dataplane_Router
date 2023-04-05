@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <net/if.h>
 #include <netinet/in.h>
 #include <asm/byteorder.h>
 #include <arpa/inet.h>
