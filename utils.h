@@ -23,6 +23,7 @@
 #define false 0
 #define mac_t uint8_t
 #define mask_t uint32_t
+#define checksum_t uint16_t
 #define MAX_BYTE_VAL 255
 #define MAX_ROUTE_TABLE_ENTRIES 100000
 
