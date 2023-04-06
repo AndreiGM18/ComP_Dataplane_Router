@@ -2,6 +2,7 @@
 #include "lib.h"
 #include "utils.h"
 #include "icmp.h"
+#include "arp.h"
 
 uint bin_search(struct route_table_entry *route_table, uint route_table_len, in_addr_t daddr)
 {
@@ -78,6 +79,7 @@ void ip(int interface, char buf[MAX_PACKET_LEN], size_t len, in_addr_t int_ip,
             ++(*(q_len));
 
             // ARP
+            arp_send_req(next_hop);
         } else {
             memcpy(eth_hdr->ether_dhost, d_mac, ETH_ALEN);
             get_interface_mac(next_hop->interface, eth_hdr->ether_shost);

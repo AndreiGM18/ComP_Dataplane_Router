@@ -3,6 +3,13 @@
 #include "protocols.h"
 #include "utils.h"
 
+void set_broadcast(mac_t *mac)
+{
+    for (uint i = 0; i < ETH_ALEN; ++i) {
+        mac[i] = MAX_BYTE_VAL;
+    }
+}
+
 void swap_mac(mac_t *mac_1, mac_t *mac_2)
 {
     mac_t *aux = (mac_t *)malloc(ETH_ALEN * sizeof(mac_t));

@@ -2,6 +2,7 @@
 #include "lib.h"
 #include "utils.h"
 #include "ip.h"
+#include "arp.h"
 
 int main(int argc, char *argv[])
 {
@@ -51,12 +52,14 @@ int main(int argc, char *argv[])
 			struct arp_header *arp_hdr = (struct arp_header *)(buf + sizeof(struct ether_header));
 
 			if (arp_hdr->tpa == int_ip) {
-				if (ntohs(arp_hdr->op) == 1) {
+				if (ntohs(arp_hdr->op) == ARP_REPLY) {
 					// do arp reply
+					arp_reply(interface, buf, len, eth_hdr, arp_hdr);
 				}
 
-				if (ntohs(arp_hdr->op) == 2) {
+				if (ntohs(arp_hdr->op) == ARP_REQUEST) {
 					// do arp request
+					arp_request(cache, &cache_len, q, &q_len, arp_hdr, route_table, route_table_len);
 				}
 			}
 
