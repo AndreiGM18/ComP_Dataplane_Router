@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	uint route_table_len = read_rtable(argv[1], route_table);
 	qsort(route_table, route_table_len, sizeof(struct route_table_entry), route_table_cmp);
 
-	mac_ip_t *cache = (mac_ip_t *)malloc(sizeof(mac_ip_t) * MAX_ROUTE_TABLE_ENTRIES);
+	struct arp_entry *cache = (struct arp_entry *)malloc(sizeof(struct arp_entry) * MAX_ROUTE_TABLE_ENTRIES);
 	DIE(!cache, "Cache malloc() failed");
 	uint cache_len = 0;
 
@@ -42,8 +42,9 @@ int main(int argc, char *argv[])
 
 		get_interface_mac(interface, int_mac);
 
-		if (!check_mac(eth_hdr->ether_dhost, int_mac))
+		if (!check_mac(eth_hdr->ether_dhost, int_mac)) {
 			continue;
+		}
 		
 		in_addr_t int_ip = inet_addr(get_interface_ip(interface));
 
@@ -52,12 +53,12 @@ int main(int argc, char *argv[])
 			struct arp_header *arp_hdr = (struct arp_header *)(buf + sizeof(struct ether_header));
 
 			if (arp_hdr->tpa == int_ip) {
-				if (ntohs(arp_hdr->op) == ARP_REPLY) {
+				if (ntohs(arp_hdr->op) == ARP_REQUEST) {
 					// do arp reply
 					arp_reply(interface, buf, len, eth_hdr, arp_hdr);
 				}
 
-				if (ntohs(arp_hdr->op) == ARP_REQUEST) {
+				if (ntohs(arp_hdr->op) == ARP_REPLY) {
 					// do arp request
 					arp_request(cache, &cache_len, q, &q_len, arp_hdr, route_table, route_table_len);
 				}

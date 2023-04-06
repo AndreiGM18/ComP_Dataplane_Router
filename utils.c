@@ -21,10 +21,10 @@ void swap_mac(mac_t *mac_1, mac_t *mac_2)
     free(aux);
 }
 
-mac_t *find_mac(in_addr_t ip, mac_ip_t *cache, uint cache_len)
+mac_t *find_mac(in_addr_t ip, struct arp_entry *cache, uint cache_len)
 {
     for (uint i = 0; i < cache_len; ++i) {
-        if (cache[i].ip == ip) {
+        if ((in_addr_t)cache[i].ip == ip) {
             return cache[i].mac;
         }
     }
@@ -48,9 +48,9 @@ int route_table_cmp(const void *x, const void *y)
         }
     } else {
         if ((ntohl(rt_1->prefix) & common) < (ntohl(rt_2->prefix) & common)) {
-            return 1;
-        } else {
             return -1;
+        } else {
+            return 1;
         }
     }
 }

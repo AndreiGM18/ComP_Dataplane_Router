@@ -9,7 +9,7 @@ uint bin_search(struct route_table_entry *route_table, uint route_table_len, in_
     uint l = 0, r = route_table_len;
 
     while (l < r) {
-        uint mid = (l + (r - l) / 2);
+        uint mid = (l + r) / 2;
 
         if (ntohl(route_table[mid].prefix) < (ntohl(daddr) & ntohl(route_table[mid].mask))) {
             l = ++mid;
@@ -24,9 +24,9 @@ uint bin_search(struct route_table_entry *route_table, uint route_table_len, in_
 void ip(int interface, char buf[MAX_PACKET_LEN], size_t len, in_addr_t int_ip,
         struct iphdr *ip_hdr, struct ether_header *eth_hdr,
         struct route_table_entry *route_table, int route_table_len,
-        mac_ip_t *cache, uint cache_len, queue q, uint *q_len)
+        struct arp_entry *cache, uint cache_len, queue q, uint *q_len)
 {
-    checksum_t old = ip_hdr->check;
+    checksum_t old = ntohs(ip_hdr->check);
     ip_hdr->check = htons(0);
     if (checksum((uint16_t *)ip_hdr, sizeof(struct iphdr)) != old) {
         return;
@@ -62,20 +62,17 @@ void ip(int interface, char buf[MAX_PACKET_LEN], size_t len, in_addr_t int_ip,
             return;
         }
 
-        ttl_t old_ttl = ip_hdr->ttl;
-        checksum_t old_check = ip_hdr->check;
-
-        ++ip_hdr->ttl;
-
-        ip_hdr->check = ~(~old_check +  ~((uint16_t)old_ttl) + (uint16_t)ip_hdr->ttl) - 1;
+        ip_hdr->check = htons(0);
+        ip_hdr->check = htons(checksum((uint16_t *)ip_hdr, sizeof(struct iphdr)));
 
         // Search for MAC in the cache
         mac_t *d_mac = find_mac(next_hop->next_hop, cache, cache_len);
 
         if (!d_mac) {
-            char payload[MAX_PACKET_LEN];
-            memcpy(payload, buf, len);
-            queue_enq(q, payload);
+            pack_t *pack = (pack_t *)malloc(sizeof(pack_t));
+            memcpy(pack, buf, len);
+            pack->len = len;
+            queue_enq(q, pack);
             ++(*(q_len));
 
             // ARP

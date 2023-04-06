@@ -18,16 +18,16 @@ void arp_reply(int interface, char buf[MAX_PACKET_LEN], size_t len, struct ether
     send_to_link(interface, buf, len);
 }
 
-void arp_request(mac_ip_t *cache, uint *cache_len, queue q, uint *q_len, struct arp_header *arp_hdr, struct route_table_entry *route_table, uint route_table_len)
+void arp_request(struct arp_entry *cache, uint *cache_len, queue q, uint *q_len, struct arp_header *arp_hdr, struct route_table_entry *route_table, uint route_table_len)
 {
     cache[*cache_len].ip = arp_hdr->spa;
     memcpy(cache[*cache_len].mac, arp_hdr->sha, ETH_ALEN);
     ++(*cache_len);
 
     for (uint i = 0; i < *q_len; ++i) {
-        void *payload = queue_deq(q);
-        struct ether_header *eth_hdr_pay = (struct ether_header *)payload;
-        struct iphdr *ip_hdr_pay = (struct iphdr *)(payload + sizeof(struct ether_header));
+        pack_t *pack = (pack_t *)queue_deq(q);
+        struct ether_header *eth_hdr_pay = (struct ether_header *)pack->payload;
+        struct iphdr *ip_hdr_pay = (struct iphdr *)(pack->payload + sizeof(struct ether_header));
 
         uint longest_pref_idx = bin_search(route_table, route_table_len, ip_hdr_pay->daddr);
         if ((ip_hdr_pay->daddr & route_table[longest_pref_idx].mask) != route_table[longest_pref_idx].prefix) {
@@ -38,13 +38,13 @@ void arp_request(mac_ip_t *cache, uint *cache_len, queue q, uint *q_len, struct 
         mac_t *d_mac = find_mac(next_hop->next_hop, cache, *cache_len);
 
         if (!d_mac) {
-            queue_enq(q, payload);
+            queue_enq(q, pack);
         } else {
             memcpy(eth_hdr_pay->ether_dhost, d_mac, ETH_ALEN);
             get_interface_mac(next_hop->interface, eth_hdr_pay->ether_shost);
 
-            send_to_link(next_hop->interface, payload, MAX_PACKET_LEN);
-            free(payload);
+            send_to_link(next_hop->interface, pack->payload, pack->len);
+            free(pack);
             --(*q_len);
         }
     }

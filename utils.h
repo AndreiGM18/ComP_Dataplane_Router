@@ -37,14 +37,14 @@
 #define IP_V4_LEN 4
 
 typedef struct {
-    mac_t mac[6];
-    in_addr_t ip;
-} mac_ip_t;
+    char payload[MAX_PACKET_LEN];
+    size_t len;
+} pack_t;
 
 void set_broadcast(mac_t *mac);
 void swap_ip(in_addr_t *ip_1, in_addr_t *ip_2);
 void swap_mac(mac_t *mac_1, mac_t *mac_2);
-mac_t *find_mac(in_addr_t ip, mac_ip_t *cache, uint cache_len);
+mac_t *find_mac(in_addr_t ip, struct arp_entry *cache, uint cache_len);
 int route_table_cmp(const void *x, const void *y);
 bool is_equal_mac(mac_t *mac_1, mac_t *mac_2);
 bool is_broadcast(mac_t* mac);
