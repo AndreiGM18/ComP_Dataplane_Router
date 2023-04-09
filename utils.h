@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: EUPL-1.2 */
+/* Copyright Mitran Andrei-Gabriel 2023 */
+
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
@@ -14,40 +17,42 @@
 #include <netinet/in.h>
 #include <asm/byteorder.h>
 #include <arpa/inet.h>
+#include "include/protocols.h"
 
 #define uint unsigned int
+
+// Bool type defining
 #define bool uint
 #define true 1
 #define false 0
+
+// Type defining
 #define mac_t uint8_t
-#define ttl_t uint8_t
 #define mask_t uint32_t
 #define checksum_t uint16_t
-#define MAX_BYTE_VAL 255
+
+// Macros for protocols and max lengths
+#define MAX_BYTE_VAL 0xff
 #define MAX_ROUTE_TABLE_ENTRIES 100000
+#define MAX_CACHE_ENTRIES 1000
 #define ETH_ALEN 6
 #define ETHERTYPE_IP 0x0800
 #define ETHERTYPE_ARP 0x0806
 #define ICMP_TIME_EXCEEDED 11
 #define ICMP_ECHO 8
+#define ICMP_ECHOREPLY 0
 #define ICMP_NET_UNREACH 0
+#define ICMP_EXC_TTL 0
 #define ICMP_DEST_UNREACH 3
 #define ARP_REQUEST 1
 #define ARP_REPLY 2
 #define IP_V4_LEN 4
+#define ETHERNET 1
 
+// Packet structure in which both the payload and size are stored
 typedef struct {
-    char payload[MAX_PACKET_LEN];
-    size_t len;
+	char payload[MAX_PACKET_LEN];
+	size_t len;
 } pack_t;
 
-void set_broadcast(mac_t *mac);
-void swap_ip(in_addr_t *ip_1, in_addr_t *ip_2);
-void swap_mac(mac_t *mac_1, mac_t *mac_2);
-mac_t *find_mac(in_addr_t ip, struct arp_entry *cache, uint cache_len);
-int route_table_cmp(const void *x, const void *y);
-bool is_equal_mac(mac_t *mac_1, mac_t *mac_2);
-bool is_broadcast(mac_t* mac);
-bool check_mac(mac_t *d_mac, mac_t *int_mac);
-
-#endif
+#endif /* _UTILS_H_ */
